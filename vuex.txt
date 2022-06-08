@@ -1,0 +1,105 @@
+***** State *****
+trong store của vuex:
+state: {
+    todos: [
+      {id: 1, title: 'Viec 1', completed: false},
+      {id: 2, title: 'Viec 2', completed: false},
+      {id: 3, title: 'Viec 3', completed: false},
+    ],
+    auth: {
+      isAuthenticated: false
+    }
+},
+
+có 3 cách để gọi state:
+- Cách 1:
+  computed: {
+        todos(){
+            return this.$store.state.todos
+        },
+        isAuthenticated(){
+            return this.$store.state.auth.isAuthenticated
+        }
+    }
+- Cách 2:
+import { mapState } from 'vuex'
+  computed: mapState({
+        todos: state => state.todos,
+        isAuthenticated: state => state.auth.isAuthenticated
+    })
+
+- Cách 3: 
+import { mapState } from 'vuex'
+computed: mapState(['todos', 'auth'])
+=> lúc này để lấy isAuthenticated ta cần auth.isAuthenticated
+
+***** getters ******
+Xử lý các tính toán
+
+***** mutations *****
+Thay đổi các state tương tác với người dùng, làm việc với trường hợp đồng bộ biết trước khi kết quả sẽ thực hiện
+mutations: {
+    TOGGLE_AUTH(state){
+      state.auth.isAuthenticated = !state.auth.isAuthenticated
+    }
+  }
+Truyền payload:
+MARK_COMPLETE(state, todoId){
+      state.todos.map(todo => {
+        if(todo.id === todoId){
+          todo.completed = !todo.completed
+          // return todo
+        }
+      })
+    }
+Sử dụng nó trong methods sử dụng commit:
+c1:
+methods: {
+        loginOrLogout(){
+            this.$store.commit('TOGGLE_AUTH')
+        }
+    }
+Truyen payload
+methods: {
+        markTodoCompleted(todoId) {
+            this.$store.commit('MARK_COMPLETE', todoId)
+        }
+    }
+c2: methods: mapMutations(['TOGGLE_AUTH']) và sử dụng biến TOGGLE_AUTH cho sự kiện click thay vì sử dụng loginOrLogout
+Truyen payload
+@change="MARK_COMPLETE(todo.id)"
+methods: mapMutations(['MARK_COMPLETE'])
+
+
+***** actions *****
+Thay đổi các state tương tác với người dùng, làm việc với các trường hợp bất đồng bộ không biết khi nào sẽ trả về kết quả, vd: gửi http request
+mutations: {
+    TOGGLE_AUTH(state){
+      state.auth.isAuthenticated = !state.auth.isAuthenticated
+    },
+    MARK_COMPLETE(state, todoId){
+      state.todos.map(todo => {
+        if(todo.id === todoId){
+          todo.completed = !todo.completed
+          // return todo
+        }
+      })
+    },
+    DELETE_TODO(state, todoId){
+      state.todos = state.todos.filter(todo => todo.id !== todoId)
+    }
+  },
+actions: {
+    deleteTodo({commit}, todoId){
+      commit('DELETE_TODO', todoId)
+    }
+  },
+
+c1:
+methods: {
+        ...mapMutations(['MARK_COMPLETE']),
+        deleteTodo(todoId){
+            this.$store.dispatch('deleteTodo', todoId)
+        }
+    },
+c2:
